@@ -7,6 +7,7 @@ const activeTab = ref<'answer' | 'input' | 'diff'>('answer')
 const userAnswer = ref<Answer[]>([])
 const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
+const showShortcuts = ref(false)
 
 const tabs = [
   { id: 'answer' as const, name: '答题' },
@@ -65,8 +66,69 @@ function handleOptionSelect(option: string) {
   }
 }
 
+// 键盘快捷键处理
+function handleKeydown(event: KeyboardEvent) {
+  // 只在答题模式下处理快捷键
+  if (activeTab.value !== 'answer')
+    return
+
+  const key = event.key.toLowerCase()
+
+  // hjkl 和方向键导航
+  if (key === 'h' || key === 'arrowleft') {
+    // 左移 -1
+    currentQuestionId.value = Math.max(1, currentQuestionId.value - 1)
+    event.preventDefault()
+  }
+  else if (key === 'l' || key === 'arrowright') {
+    // 右移 +1
+    currentQuestionId.value = Math.min(questionCount.value, currentQuestionId.value + 1)
+    event.preventDefault()
+  }
+  else if (key === 'j' || key === 'arrowdown') {
+    // 下移 +5
+    currentQuestionId.value = Math.min(questionCount.value, currentQuestionId.value + 5)
+    event.preventDefault()
+  }
+  else if (key === 'k' || key === 'arrowup') {
+    // 上移 -5
+    currentQuestionId.value = Math.max(1, currentQuestionId.value - 5)
+    event.preventDefault()
+  }
+
+  // abcd/1234 作答
+  const answerKeys = ['a', 'b', 'c', 'd', '1', '2', '3', '4']
+  if (answerKeys.includes(key)) {
+    let answerValue = key
+    if (['1', '2', '3', '4'].includes(key)) {
+      answerValue = ['a', 'b', 'c', 'd'][Number.parseInt(key) - 1] || 'a'
+    }
+    handleOptionSelect(answerValue.toUpperCase())
+    event.preventDefault()
+  }
+
+  // backspace 删除答案或跳转到前一个题目
+  if (key === 'backspace') {
+    const currentAnswer = userAnswer.value.find(q => q.id === currentQuestionId.value)
+    if (currentAnswer?.value) {
+      // 删除当前答案
+      currentAnswer.value = undefined
+    }
+    else {
+      // 跳转到前一个题目
+      currentQuestionId.value = Math.max(1, currentQuestionId.value - 1)
+    }
+    event.preventDefault()
+  }
+}
+
 onMounted(() => {
   initializeQuestions()
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -150,7 +212,122 @@ onMounted(() => {
         <button @click="currentQuestionId++">
           Next
         </button>
+        <button
+          text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white right-12 absolute hover="bg-neutral-50"
+          @click="showShortcuts = true"
+        >
+          快捷键帮助
+        </button>
       </div>
     </footer>
+
+    <!-- 快捷键帮助模态框 -->
+    <div
+      v-if="showShortcuts"
+      bg="black/50" flex items-center inset-0 justify-center fixed z-50
+      @click="showShortcuts = false"
+    >
+      <div
+        mx-4 p-6 rounded-lg bg-white max-w-md w-full shadow-lg
+        @click.stop
+      >
+        <div flex="~" mb-4 items-center justify-between>
+          <h2 text="xl neutral-800" font-semibold>
+            快捷键帮助
+          </h2>
+          <button
+            text="lg neutral-500 hover:neutral-700"
+            @click="showShortcuts = false"
+          >
+            ×
+          </button>
+        </div>
+
+        <div space-y-4>
+          <div>
+            <h3 text="lg neutral-700" font-semibold mb-2>
+              导航
+            </h3>
+            <div grid="~ cols-2" text-sm gap2>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>h</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>←</kbd>
+                <span text="neutral-600">左移 -1</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>l</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>→</kbd>
+                <span text="neutral-600">右移 +1</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>j</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↓</kbd>
+                <span text="neutral-600">下移 +5</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>k</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↑</kbd>
+                <span text="neutral-600">上移 -5</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 text="lg neutral-700" font-semibold mb-2>
+              作答
+            </h3>
+            <div grid="~ cols-2" text-sm gap2>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>a</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>1</kbd>
+                <span text="neutral-600">选择 A</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>b</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>2</kbd>
+                <span text="neutral-600">选择 B</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>c</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>3</kbd>
+                <span text="neutral-600">选择 C</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>d</kbd>
+                <span text="neutral-600">或</span>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>4</kbd>
+                <span text="neutral-600">选择 D</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 text="lg neutral-700" font-semibold mb-2>
+              其他
+            </h3>
+            <div flex="~" text-sm gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
+              <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
+            </div>
+          </div>
+        </div>
+
+        <div mt-6 pt-4 border="t-1 neutral-200" text-center>
+          <button
+            text="blue-600 hover:blue-700"
+            @click="showShortcuts = false"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
