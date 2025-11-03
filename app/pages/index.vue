@@ -16,6 +16,15 @@ const tabs = [
 
 const options = ['A', 'B', 'C', 'D']
 
+// 统计信息
+const answeredCount = computed(() => {
+  return userAnswer.value.filter(answer => answer.value).length
+})
+
+const remainingCount = computed(() => {
+  return questionCount.value - answeredCount.value
+})
+
 function initializeQuestions() {
   userAnswer.value = Array.from({ length: questionCount.value }, (_, i) => ({
     id: i + 1,
@@ -84,6 +93,23 @@ onMounted(() => {
             @change="initializeQuestions"
           >
           <span text="neutral-600">道题目</span>
+        </div>
+
+        <div v-if="activeTab === 'answer'" mt4 pt4 border="t-1 neutral-200">
+          <div flex="~ wrap" gap6 items="center" text="sm">
+            <div>
+              <span text="neutral-600">已做：</span>
+              <span text="green-600" font-semibold>{{ answeredCount }}</span>
+            </div>
+            <div>
+              <span text="neutral-600">剩余：</span>
+              <span text="orange-600" font-semibold>{{ remainingCount }}</span>
+            </div>
+            <div>
+              <span text="neutral-600">进度：</span>
+              <span text="blue-600" font-semibold>{{ Math.round((answeredCount / questionCount) * 100) || 0 }}%</span>
+            </div>
+          </div>
         </div>
       </div>
 
