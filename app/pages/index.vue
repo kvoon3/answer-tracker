@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
+import AnswerList from '~/components/AnswerList.vue'
 
 const questionCount = ref(130)
-const activeTab = ref<'answer' | 'input'>('answer')
+const activeTab = ref<'answer' | 'input' | 'diff'>('answer')
 const userAnswer = ref<Answer[]>([])
 const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
@@ -10,6 +11,7 @@ const currentQuestionId = ref<number>(0)
 const tabs = [
   { id: 'answer' as const, name: '答题' },
   { id: 'input' as const, name: '录入答案' },
+  { id: 'diff' as const, name: '对比' },
 ]
 
 const options = ['A', 'B', 'C', 'D']
@@ -60,7 +62,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div flex="~ col" h="screen" bg="neutral-50" text-neutral-500 relative>
+  <div h="screen" bg="neutral-50" text-neutral-500 relative>
     <header p4 bg-white shadow-sm>
       <h1 text="2xl center neutral-800" font="bold">
         Quick Answer Diff
@@ -98,8 +100,9 @@ onMounted(() => {
         </div>
 
         <div p4>
-          <QuestionList v-if="activeTab === 'answer'" v-model:questions="userAnswer" v-model:current-question-id="currentQuestionId" />
-          <QuestionList v-else-if="activeTab === 'input'" v-model:questions="answer" v-model:current-question-id="currentQuestionId" />
+          <AnswerList v-if="activeTab === 'answer'" v-model:questions="userAnswer" v-model:current-question-id="currentQuestionId" />
+          <AnswerList v-else-if="activeTab === 'input'" v-model:questions="answer" v-model:current-question-id="currentQuestionId" />
+          <DiffList v-else-if="activeTab === 'diff'" v-model:user-answer="userAnswer" v-model:answer="answer" />
         </div>
       </div>
     </main>
