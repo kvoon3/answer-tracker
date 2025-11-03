@@ -37,7 +37,7 @@ const groupedDiffResults = computed(() => {
           flex="~ col"
           gap2 w16 items-center
         >
-          <span text="sm neutral-600">{{ result.id }}</span>
+          <span text="sm neutral-600" font-bold>{{ result.id }}</span>
           <div
             text-lg font-semibold border-2 rounded-lg flex h12 w12 items-center justify-center
             transition="all duration-200"

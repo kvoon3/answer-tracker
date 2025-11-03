@@ -23,7 +23,7 @@ const groupedQuestions = computed(() => {
           flex="~ col"
           gap2 w16 items-center
         >
-          <span text="sm neutral-600">{{ question.id }}</span>
+          <span text="sm neutral-600" font-bold>{{ question.id }}</span>
           <button
             text-lg font-semibold border-2 rounded-lg h12 w12
             transition="all duration-200"

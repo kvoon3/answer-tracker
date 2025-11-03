@@ -62,14 +62,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div h="screen" bg="neutral-50" text-neutral-500 relative>
+  <div grid="~ rows-[min-content_1fr_min-content]" text-neutral-500 bg-neutral-50 h-screen relative>
     <header p4 bg-white shadow-sm>
       <h1 text="2xl center neutral-800" font="bold">
-        Quick Answer Diff
+        Simple Answer Diff
       </h1>
     </header>
 
-    <main flex1 p4>
+    <main p4 of-y-auto flex="~ col">
       <div mb6 p6 rounded-lg bg-white shadow-sm>
         <h2 text="xl neutral-800" font-semibold mb4>
           设置题目数量
@@ -87,8 +87,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <div rounded-lg bg-white shadow-sm>
-        <div flex="~" border="b-1 neutral-200">
+      <div rounded-lg bg-white shadow-sm relative of-auto>
+        <div border="b-1 neutral-200" bg-white top-0 sticky>
           <button
             v-for="tab in tabs" :key="tab.id"
             flex1 font-medium p4 text-center border="b-2 transparent"
@@ -107,7 +107,7 @@ onMounted(() => {
       </div>
     </main>
 
-    <footer border="t-1 neutral-200" p4 bg-white shadow-lg bottom-0 sticky space-y-2>
+    <footer v-if="activeTab !== 'diff'" border="t-1 neutral-200" p4 bg-white shadow-lg bottom-0 sticky space-y-2>
       <div flex="~ wrap" gap3 items-center justify-center>
         <button
           @click="currentQuestionId--"
