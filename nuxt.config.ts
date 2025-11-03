@@ -3,7 +3,10 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@unocss/nuxt',
+    '@vueuse/nuxt',
   ],
+
+  css: ['floating-vue/style.css'],
 
   devtools: { enabled: true },
 

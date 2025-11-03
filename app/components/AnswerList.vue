@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
+import { Menu } from 'floating-vue'
 
 const questions = defineModel<Answer[]>('questions', { default: () => [] })
 const currentQuestionId = defineModel<number>('currentQuestionId', { default: 0 })
@@ -11,37 +12,64 @@ const groupedQuestions = computed(() => {
   }
   return groups
 })
+
+// 选项列表
+const options = ['A', 'B', 'C', 'D']
+
+// 处理选项选择
+function handleOptionSelect(questionId: number, option: string) {
+  const question = questions.value.find(q => q.id === questionId)
+  if (question) {
+    question.value = option
+  }
+}
 </script>
 
 <template>
   <div>
     <div v-for="(group, groupIndex) in groupedQuestions" :key="groupIndex" mb6>
-      <div flex="~ wrap" gap4 justify="center">
-        <div
+      <div flex="~ wrap" gap6 justify="center">
+        <Menu
           v-for="(question) in group"
           :key="question.id"
-          flex="~ col"
-          gap2 w16 items-center
+          :triggers="['hover']"
+          :delay="{ show: 100, hide: 300 }"
+          placement="bottom"
         >
-          <span text="sm neutral-600" font-bold>{{ question.id }}</span>
-          <button
-            text-lg font-semibold border-2 rounded-lg h12 w12
-            transition="all duration-200"
-            :class="{
-              'border-neutral-300 bg-white text-gray-700 hover:border-neutral-400': !question.value && currentQuestionId !== question.id,
-              'border-blue-500 bg-blue-50 text-blue-600': question.value && currentQuestionId !== question.id,
-              'border-neutral-500 bg-neutral-300/20': currentQuestionId === question.id,
-            }"
-            @click="currentQuestionId = question.id"
-          >
-            {{ question.value
-              ? question.value
-              : currentQuestionId === question.id
-                ? '-'
-                : '?'
-            }}
-          </button>
-        </div>
+          <div flex="~ col" gap2 w16 items-center>
+            <span text="sm neutral-600" font-bold>{{ question.id }}</span>
+            <button
+              text-lg font-semibold border-2 rounded-lg h12 w12
+              transition="all duration-200"
+              :class="{
+                'border-neutral-300 bg-white text-gray-700 hover:border-neutral-400': !question.value && currentQuestionId !== question.id,
+                'border-blue-500 bg-blue-50 text-blue-600': question.value && currentQuestionId !== question.id,
+                'border-neutral-500 bg-neutral-300/20': currentQuestionId === question.id,
+              }"
+              @click="currentQuestionId = question.id"
+            >
+              {{ question.value
+                ? question.value
+                : currentQuestionId === question.id
+                  ? '-'
+                  : '?'
+              }}
+            </button>
+          </div>
+
+          <template #popper>
+            <div flex="~ wrap" p2 bg-white gap2 shadow-lg>
+              <button
+                v-for="option in options" :key="option"
+                text="sm white"
+                px1 rounded bg-blue-500 hover:bg-blue-600 transition="all duration-200"
+                @click="handleOptionSelect(question.id, option)"
+              >
+                {{ option }}
+              </button>
+            </div>
+          </template>
+        </Menu>
       </div>
     </div>
   </div>

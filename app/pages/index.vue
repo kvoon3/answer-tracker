@@ -26,6 +26,26 @@ const remainingCount = computed(() => {
   return questionCount.value - answeredCount.value
 })
 
+// 准确率统计
+const correctCount = computed(() => {
+  return userAnswer.value.filter((userAnswerItem) => {
+    const correctAnswerItem = answer.value.find(a => a.id === userAnswerItem.id)
+    return userAnswerItem.value && userAnswerItem.value === correctAnswerItem?.value
+  }).length
+})
+
+const incorrectCount = computed(() => {
+  return userAnswer.value.filter((userAnswerItem) => {
+    const correctAnswerItem = answer.value.find(a => a.id === userAnswerItem.id)
+    return userAnswerItem.value && userAnswerItem.value !== correctAnswerItem?.value
+  }).length
+})
+
+const accuracyRate = computed(() => {
+  const answered = answeredCount.value
+  return answered > 0 ? Math.round((correctCount.value / answered) * 100) : 0
+})
+
 function initializeQuestions() {
   userAnswer.value = Array.from({ length: questionCount.value }, (_, i) => ({
     id: i + 1,
@@ -76,14 +96,17 @@ function handleKeydown(event: KeyboardEvent) {
     const currentIndex = tabs.findIndex(tab => tab.id === activeTab.value)
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1
     const prevTab = tabs[prevIndex]
-    if (prevTab) activeTab.value = prevTab.id
+    if (prevTab)
+      activeTab.value = prevTab.id
     event.preventDefault()
-  } else if (key === ']') {
+  }
+  else if (key === ']') {
     // 切换到下一个标签页
     const currentIndex = tabs.findIndex(tab => tab.id === activeTab.value)
     const nextIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0
     const nextTab = tabs[nextIndex]
-    if (nextTab) activeTab.value = nextTab.id
+    if (nextTab)
+      activeTab.value = nextTab.id
     event.preventDefault()
   }
 
@@ -152,9 +175,48 @@ onUnmounted(() => {
 <template>
   <div grid="~ rows-[min-content_1fr_min-content]" text-neutral-500 bg-neutral-50 h-screen relative>
     <header p4 bg-white shadow-sm>
-      <h1 text="2xl center neutral-800" font="bold">
-        Simple Answer Diff
-      </h1>
+      <div flex="~" items-center justify-between>
+        <h1 text="2xl neutral-800" font="bold">
+          Simple Answer Diff
+        </h1>
+
+        <!-- 常显进度统计 -->
+        <div flex="~ wrap" gap6 items-center text="sm">
+          <div>
+            <span text="neutral-600">已做：</span>
+            <span text="green-600" font-semibold>{{ answeredCount }}</span>
+          </div>
+          <div>
+            <span text="neutral-600">剩余：</span>
+            <span text="orange-600" font-semibold>{{ remainingCount }}</span>
+          </div>
+          <div>
+            <span text="neutral-600">进度：</span>
+            <span text="blue-600" font-semibold>{{ Math.round((answeredCount / questionCount) * 100) || 0 }}%</span>
+          </div>
+          <div v-if="answeredCount > 0">
+            <span text="neutral-600">正确：</span>
+            <span text="green-600" font-semibold>{{ correctCount }}</span>
+          </div>
+          <div v-if="answeredCount > 0">
+            <span text="neutral-600">错误：</span>
+            <span text="red-600" font-semibold>{{ incorrectCount }}</span>
+          </div>
+          <div v-if="answeredCount > 0">
+            <span text="neutral-600">准确率：</span>
+            <span
+              :class="{
+                'text-green-600': accuracyRate >= 80,
+                'text-yellow-600': accuracyRate >= 60 && accuracyRate < 80,
+                'text-red-600': accuracyRate < 60,
+              }"
+              font-semibold
+            >
+              {{ accuracyRate }}%
+            </span>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main p4 of-y-auto flex="~ col">
@@ -172,23 +234,6 @@ onUnmounted(() => {
             @change="initializeQuestions"
           >
           <span text="neutral-600">道题目</span>
-        </div>
-
-        <div v-if="activeTab === 'answer'" mt4 pt4 border="t-1 neutral-200">
-          <div flex="~ wrap" gap6 items="center" text="sm">
-            <div>
-              <span text="neutral-600">已做：</span>
-              <span text="green-600" font-semibold>{{ answeredCount }}</span>
-            </div>
-            <div>
-              <span text="neutral-600">剩余：</span>
-              <span text="orange-600" font-semibold>{{ remainingCount }}</span>
-            </div>
-            <div>
-              <span text="neutral-600">进度：</span>
-              <span text="blue-600" font-semibold>{{ Math.round((answeredCount / questionCount) * 100) || 0 }}%</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -329,7 +374,7 @@ onUnmounted(() => {
             <h3 text="lg neutral-700" font-semibold mb-2>
               其他
             </h3>
-            <div space-y-2 text-sm>
+            <div text-sm space-y-2>
               <div flex="~" gap2 items-center>
                 <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
                 <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
