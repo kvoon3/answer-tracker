@@ -68,11 +68,28 @@ function handleOptionSelect(option: string) {
 
 // 键盘快捷键处理
 function handleKeydown(event: KeyboardEvent) {
-  // 只在答题模式下处理快捷键
-  if (activeTab.value !== 'answer')
-    return
-
   const key = event.key.toLowerCase()
+
+  // [ ] 切换标签页（在所有模式下都可用）
+  if (key === '[') {
+    // 切换到前一个标签页
+    const currentIndex = tabs.findIndex(tab => tab.id === activeTab.value)
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1
+    const prevTab = tabs[prevIndex]
+    if (prevTab) activeTab.value = prevTab.id
+    event.preventDefault()
+  } else if (key === ']') {
+    // 切换到下一个标签页
+    const currentIndex = tabs.findIndex(tab => tab.id === activeTab.value)
+    const nextIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0
+    const nextTab = tabs[nextIndex]
+    if (nextTab) activeTab.value = nextTab.id
+    event.preventDefault()
+  }
+
+  // 只在答题和录入答案模式下处理其他快捷键
+  if (activeTab.value === 'diff')
+    return
 
   // hjkl 和方向键导航
   if (key === 'h' || key === 'arrowleft') {
@@ -312,9 +329,19 @@ onUnmounted(() => {
             <h3 text="lg neutral-700" font-semibold mb-2>
               其他
             </h3>
-            <div flex="~" text-sm gap2 items-center>
-              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
-              <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
+            <div space-y-2 text-sm>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
+                <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>[</kbd>
+                <span text="neutral-600">切换到前一个标签页</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>]</kbd>
+                <span text="neutral-600">切换到下一个标签页</span>
+              </div>
             </div>
           </div>
         </div>
