@@ -177,7 +177,7 @@ onUnmounted(() => {
     <header p4 bg-white shadow-sm>
       <div flex="~" items-center justify-between>
         <h1 text="2xl neutral-800" font="bold">
-          Simple Answer Diff
+          Answer Tracker
         </h1>
 
         <!-- 常显进度统计 -->
