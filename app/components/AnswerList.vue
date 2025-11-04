@@ -3,7 +3,7 @@ import type { Answer } from '~/types'
 import { Menu } from 'floating-vue'
 import { nextTick, ref, watch } from 'vue'
 
-const questions = defineModel<Answer[]>('questions', { default: () => [] })
+const answers = defineModel<Answer[]>('questions', { default: () => [] })
 const currentQuestionId = defineModel<number>('currentQuestionId', { default: 0 })
 
 // Refs for question elements to enable auto-scrolling
@@ -11,8 +11,8 @@ const questionRefs = ref<Record<number, HTMLElement>>({})
 
 const groupedQuestions = computed(() => {
   const groups = []
-  for (let i = 0; i < questions.value.length; i += 5) {
-    groups.push(questions.value.slice(i, i + 5))
+  for (let i = 0; i < answers.value.length; i += 5) {
+    groups.push(answers.value.slice(i, i + 5))
   }
   return groups
 })
@@ -22,9 +22,9 @@ const options = ['A', 'B', 'C', 'D']
 
 // 处理选项选择
 function handleOptionSelect(questionId: number, option: string) {
-  const question = questions.value.find(q => q.id === questionId)
-  if (question) {
-    question.value = option
+  const answer = answers.value.find(q => q.id === questionId)
+  if (answer) {
+    answer.value = option
   }
 }
 
