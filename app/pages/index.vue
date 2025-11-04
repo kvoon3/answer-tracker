@@ -14,6 +14,7 @@ const showSettings = ref(false)
 const showImport = ref(false)
 
 const isInputing = ref(false)
+const shortcutsEnabled = ref(true)
 
 const tabs = [
   { id: 'answer' as const, name: '用户答案' },
@@ -95,6 +96,17 @@ function handleOptionSelect(option: string) {
 // 键盘快捷键处理
 function handleKeydown(event: KeyboardEvent) {
   if (isInputing.value)
+    return
+
+  // 空格键切换快捷键启用/禁用
+  if (event.key === ' ') {
+    shortcutsEnabled.value = !shortcutsEnabled.value
+    event.preventDefault()
+    return
+  }
+
+  // 如果快捷键被禁用，不处理其他按键
+  if (!shortcutsEnabled.value)
     return
 
   const key = event.key.toLowerCase()
@@ -224,11 +236,26 @@ onUnmounted(() => {
 
         <!-- 常显进度统计 -->
         <div flex="~ wrap" gap4 items-center md:gap6 text="sm">
+          <!-- 快捷键状态 -->
+          <div flex="~" gap2 items-center>
+            <Icon
+              name="ph:keyboard"
+              size="18"
+            />
+            <span max-sm:hidden text="neutral-600">快捷键：</span>
+            <span
+              :class="shortcutsEnabled ? 'text-teal-600' : 'text-red-600'"
+              font-semibold
+            >
+              {{ shortcutsEnabled ? '启用' : '禁用' }}
+            </span>
+          </div>
+
           <!-- 已做 -->
           <div flex="~" gap2 items-center>
-            <Icon name="ph:check-circle" size="18" text="green-600" />
+            <Icon name="ph:check-circle" size="18" text="teal-600" />
             <span max-sm:hidden text="neutral-600">已做：</span>
-            <span text="green-600" font-semibold>{{ answeredCount }}</span>
+            <span text="teal-600" font-semibold>{{ answeredCount }}</span>
           </div>
 
           <!-- 剩余 -->
@@ -247,9 +274,9 @@ onUnmounted(() => {
 
           <!-- 正确 -->
           <div v-if="answeredCount > 0" flex="~" gap2 items-center>
-            <Icon name="ph:check" size="18" text="green-600" />
+            <Icon name="ph:check" size="18" text="teal-600" />
             <span max-sm:hidden text="neutral-600">正确：</span>
-            <span text="green-600" font-semibold>{{ correctCount }}</span>
+            <span text="teal-600" font-semibold>{{ correctCount }}</span>
           </div>
 
           <!-- 错误 -->
@@ -264,7 +291,7 @@ onUnmounted(() => {
             <Icon
               name="ph:target" size="18"
               :class="{
-                'text-green-600': accuracyRate >= 80,
+                'text-teal-600': accuracyRate >= 80,
                 'text-yellow-600': accuracyRate >= 60 && accuracyRate < 80,
                 'text-red-600': accuracyRate < 60,
               }"
@@ -272,7 +299,7 @@ onUnmounted(() => {
             <span max-sm:hidden text="neutral-600">准确率：</span>
             <span
               :class="{
-                'text-green-600': accuracyRate >= 80,
+                'text-teal-600': accuracyRate >= 80,
                 'text-yellow-600': accuracyRate >= 60 && accuracyRate < 80,
                 'text-red-600': accuracyRate < 60,
               }"
@@ -411,6 +438,10 @@ onUnmounted(() => {
             其他
           </h3>
           <div text-sm space-y-2>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>space</kbd>
+              <span text="neutral-600">切换快捷键启用/禁用</span>
+            </div>
             <div flex="~" gap2 items-center>
               <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
               <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>

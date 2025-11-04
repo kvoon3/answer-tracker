@@ -42,7 +42,7 @@ const groupedDiffResults = computed(() => {
             text-lg font-semibold border-2 rounded-lg flex size-10 items-center justify-center
             transition="all duration-200"
             :class="{
-              'border-green-500 bg-green-50 text-green-600': result.isCorrect && result.userAnswer,
+              'border-teal-500 bg-teal-50 text-teal-600': result.isCorrect && result.userAnswer,
               'border-red-500 bg-red-50 text-red-600': !result.isCorrect && result.userAnswer,
               'border-neutral-300 bg-white text-gray-700': !result.userAnswer,
             }"
