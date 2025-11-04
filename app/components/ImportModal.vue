@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useProfiles } from '~/composables/useProfiles'
+
 interface Props {
   show: boolean
 }
@@ -6,8 +8,9 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
-  import: [answers: (string | undefined)[], type: 'user' | 'standard']
 }>()
+
+const { currentProfile } = useProfiles()
 
 const activeTab = ref<'user' | 'standard'>('user')
 const inputText = ref('')
@@ -61,8 +64,18 @@ function handleParse() {
 
 function handleImport() {
   const answers = parseAnswers(inputText.value)
-  if (answers.length > 0) {
-    emit('import', answers, activeTab.value)
+  if (answers.length > 0 && currentProfile.value) {
+    // Update the appropriate answers array based on active tab
+    const targetAnswers = activeTab.value === 'user'
+      ? currentProfile.value.userAnswers
+      : currentProfile.value.standardAnswers
+
+    // Update answers, limiting to the available questions
+    const maxQuestions = Math.min(answers.length, targetAnswers.length)
+    for (let i = 0; i < maxQuestions; i++) {
+      targetAnswers[i]!.value = answers[i]
+    }
+
     handleClose()
   }
 }
