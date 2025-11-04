@@ -289,14 +289,10 @@ function cancelEditProfile() {
   <div grid="~ rows-[min-content_1fr_min-content]" text-neutral-500 bg-neutral-50 h-screen relative>
     <header p4 bg-white shadow-sm>
       <div flex="~" items-center justify-between>
-        <div flex="~" gap3 items-center>
-          <h1 text="2xl neutral-800" font="bold" max-sm:hidden>
+        <div flex="~" gap3 items-center max-sm:hidden>
+          <h1 text="2xl neutral-800" font="bold">
             Answer Tracker
           </h1>
-          <div v-if="currentProfile" flex="~" text="sm neutral-600" border="1 neutral-300 rounded" p="x-3 y-1" bg-white gap2 items-center>
-            <Icon name="ph:folder-simple" size="16" />
-            <span>{{ currentProfile.name }}</span>
-          </div>
         </div>
 
         <!-- 常显进度统计 -->
