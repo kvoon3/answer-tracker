@@ -6,7 +6,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
-  import: [answers: string[], type: 'user' | 'standard']
+  import: [answers: (string | undefined)[], type: 'user' | 'standard']
 }>()
 
 const activeTab = ref<'user' | 'standard'>('user')
@@ -29,14 +29,15 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-function parseAnswers(text: string): string[] {
+function parseAnswers(text: string): (string | undefined)[] {
   // Use regex to find all A, B, C, D, or * characters
-  const matches = text.match(/[ABCD*]/gi)
-  if (!matches) return []
+  const matches = text.match(/[A-D*]/gi)
+  if (!matches)
+    return []
 
   // Convert to uppercase and handle * as undefined (empty)
   return matches.map(match =>
-    match.toUpperCase() === '*' ? undefined : match.toUpperCase()
+    match.toUpperCase() === '*' ? undefined : match.toUpperCase(),
   )
 }
 
@@ -52,7 +53,8 @@ function handleParse() {
 
   if (answers.length === 0) {
     errorMessage.value = '未找到有效的答案 (A, B, C, D 或 *)'
-  } else {
+  }
+  else {
     errorMessage.value = ''
   }
 }
@@ -99,22 +101,22 @@ onUnmounted(() => {
       <!-- Tab Navigation -->
       <div flex="~" mb-4 border="b-1 neutral-200">
         <button
-          flex-1 py-2 text-center border-b-2 transition-colors
+          py-2 text-center border-b-2 flex-1 transition-colors
           :class="[
             activeTab === 'user'
               ? 'border-teal-500 text-teal-600'
-              : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              : 'border-transparent text-neutral-500 hover:text-neutral-700',
           ]"
           @click="activeTab = 'user'"
         >
           用户答案
         </button>
         <button
-          flex-1 py-2 text-center border-b-2 transition-colors
+          py-2 text-center border-b-2 flex-1 transition-colors
           :class="[
             activeTab === 'standard'
               ? 'border-teal-500 text-teal-600'
-              : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              : 'border-transparent text-neutral-500 hover:text-neutral-700',
           ]"
           @click="activeTab = 'standard'"
         >
@@ -124,16 +126,16 @@ onUnmounted(() => {
 
       <!-- Input Area -->
       <div>
-        <label for="answer-input" block mb-2 text="sm neutral-700" font-medium>
+        <label for="answer-input" text="sm neutral-700" font-medium mb-2 block>
           粘贴答案文本 (支持 A, B, C, D 或 * 表示留空)
         </label>
         <textarea
           id="answer-input"
           v-model="inputText"
           rows="10"
-          w-full p-3 border rounded-lg resize-vertical
+          resize-vertical p-3 border rounded-lg w-full
           :class="[
-            errorMessage ? 'border-red-300 focus:border-red-500' : 'border-neutral-300 focus:border-teal-500'
+            errorMessage ? 'border-red-300 focus:border-red-500' : 'border-neutral-300 focus:border-teal-500',
           ]"
           placeholder="例如：
 1. A
@@ -161,10 +163,10 @@ A B C * D A B C D A B C D A B C D
       </div>
 
       <!-- Action Buttons -->
-      <div mt-6 pt-4 border="t-1 neutral-200" flex="~" justify-end gap-3>
+      <div border="t-1 neutral-200" flex="~" mt-6 pt-4 gap-3 justify-end>
         <button
-          px-4 py-2 border rounded-lg transition-colors
-          border-neutral-300 text-neutral-700 hover:bg-neutral-50
+
+          text-neutral-700 px-4 py-2 border border-neutral-300 rounded-lg transition-colors hover:bg-neutral-50
           @click="handleClose"
         >
           取消
@@ -174,7 +176,7 @@ A B C * D A B C D A B C D A B C D
           :class="[
             parsedCount > 0
               ? 'bg-teal-500 border-teal-500 text-white hover:bg-teal-600'
-              : 'bg-neutral-300 border-neutral-300 text-neutral-500 cursor-not-allowed'
+              : 'bg-neutral-300 border-neutral-300 text-neutral-500 cursor-not-allowed',
           ]"
           :disabled="parsedCount === 0"
           @click="handleImport"
