@@ -1,5 +1,5 @@
 export const useCurrentQuestionId = () => useState<number>('currentQuestionId', () => 0)
-export const useShortcutsEnabled = () => useState<boolean>('shortcutsEnabled', () => true)
+export const useShortcutsEnabled = () => useCookie<boolean>('shortcutsEnabled', { default: () => false })
 export const useShowShortcuts = () => useState<boolean>('showShortcuts', () => false)
 export const useShowSettings = () => useState<boolean>('showSettings', () => false)
 export const useShowImport = () => useState<boolean>('showImport', () => false)
