@@ -9,6 +9,8 @@ const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
 const showShortcuts = ref(false)
 
+const isInputing = ref(false)
+
 const tabs = [
   { id: 'answer' as const, name: '答题' },
   { id: 'input' as const, name: '录入答案' },
@@ -88,6 +90,9 @@ function handleOptionSelect(option: string) {
 
 // 键盘快捷键处理
 function handleKeydown(event: KeyboardEvent) {
+  if (isInputing.value)
+    return
+
   const key = event.key.toLowerCase()
 
   // [ ] 切换标签页（在所有模式下都可用）
@@ -254,9 +259,12 @@ onUnmounted(() => {
           <input
             v-model.number="questionCount"
             type="number"
-            min="1" max="100"
-            border="1 neutral-300 rounded" p="x-3 y-2"
-            text-center bg-white w32
+            min="1"
+            max="100" border="1 neutral-300 rounded"
+            p="x-3 y-2" text-center
+            bg-white w32 @focus="() => {
+              isInputing = true
+            }"
             @change="initializeQuestions"
           >
           <span text="neutral-600">道题目</span>
