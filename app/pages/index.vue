@@ -152,6 +152,18 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault()
   }
 
+  // ? 切换帮助
+  if (key === '?') {
+    showShortcuts.value = !showShortcuts.value
+    event.preventDefault()
+  }
+
+  // ESC 关闭帮助
+  if (key === 'escape' && showShortcuts.value) {
+    showShortcuts.value = false
+    event.preventDefault()
+  }
+
   // backspace 删除答案或跳转到前一个题目
   if (key === 'backspace') {
     const currentAnswer = userAnswer.value.find(q => q.id === currentQuestionId.value)
@@ -312,7 +324,7 @@ onUnmounted(() => {
           text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white right-12 absolute max-lg:hidden hover="bg-neutral-50"
           @click="showShortcuts = true"
         >
-          快捷键帮助
+          快捷键帮助 (按 ?)
         </button>
       </div>
     </footer>
@@ -420,6 +432,10 @@ onUnmounted(() => {
               <div flex="~" gap2 items-center>
                 <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>]</kbd>
                 <span text="neutral-600">切换到下一个标签页</span>
+              </div>
+              <div flex="~" gap2 items-center>
+                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>?</kbd>
+                <span text="neutral-600">显示/隐藏此帮助窗口</span>
               </div>
             </div>
           </div>
