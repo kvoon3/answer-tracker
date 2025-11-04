@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
 import AnswerList from '~/components/AnswerList.vue'
+import ImportModal from '~/components/ImportModal.vue'
 import Modal from '~/components/Modal.vue'
 
 const questionCount = ref(130)
@@ -10,12 +11,13 @@ const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
 const showShortcuts = ref(false)
 const showSettings = ref(false)
+const showImport = ref(false)
 
 const isInputing = ref(false)
 
 const tabs = [
-  { id: 'answer' as const, name: '答题' },
-  { id: 'input' as const, name: '录入答案' },
+  { id: 'answer' as const, name: '用户答案' },
+  { id: 'input' as const, name: '标准答案' },
   { id: 'diff' as const, name: '对比' },
 ]
 
@@ -160,6 +162,12 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault()
   }
 
+  // Ctrl+I 导入答案
+  if (event.ctrlKey && key === 'i') {
+    showImport.value = true
+    event.preventDefault()
+  }
+
   // backspace 删除答案或跳转到前一个题目
   if (key === 'backspace') {
     const currentAnswer = userAnswer.value.find(q => q.id === currentQuestionId.value)
@@ -173,6 +181,25 @@ function handleKeydown(event: KeyboardEvent) {
     }
     event.preventDefault()
   }
+}
+
+function handleImport(answers: string[], type: 'user' | 'standard') {
+  const targetArray = type === 'user' ? userAnswer.value : answer.value
+
+  // Update question count if needed
+  if (answers.length > questionCount.value) {
+    questionCount.value = answers.length
+    initializeQuestions()
+  }
+
+  // Update answers
+  answers.forEach((answerValue, index) => {
+    const questionId = index + 1
+    const answerItem = targetArray.find(q => q.id === questionId)
+    if (answerItem) {
+      answerItem.value = answerValue || undefined
+    }
+  })
 }
 
 onMounted(() => {
@@ -255,6 +282,7 @@ onUnmounted(() => {
             </span>
           </div>
 
+          <Icon name="ph:upload-simple" size="24" @click="showImport = true" />
           <Icon name="ph:gear-six-duotone" size="24" @click="showSettings = true" />
         </div>
       </div>
@@ -432,5 +460,12 @@ onUnmounted(() => {
         </div>
       </div>
     </Modal>
+
+    <!-- 导入答案模态框 -->
+    <ImportModal
+      :show="showImport"
+      @close="showImport = false"
+      @import="handleImport"
+    />
   </div>
 </template>

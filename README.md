@@ -10,12 +10,13 @@ A dead simple, keyboard-friendly answer tracking application
 - **Progress Tracking**: Real-time statistics on completion and accuracy
 - **Responsive Design**: Works on both desktop and mobile devices
 - **Modal System**: Help and settings accessible via modals
+- **Importing**: Import user answers and standard answers
 
 ## To-dos
 
+- [x] Answer data importing
 - [ ] i18n support
 - [ ] Dark mode
-- [ ] Answer data importing
 - [ ] Document importing
 - [ ] Time limit
 
