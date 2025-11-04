@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
 
-const userAnswer = defineModel<Answer[]>('userAnswer', { default: () => [] })
-const answer = defineModel<Answer[]>('answer', { default: () => [] })
+const { currentProfile } = useProfiles()
+
+const userAnswer = computed<Answer[]>(() => currentProfile.value?.userAnswers || [])
+const answer = computed<Answer[]>(() => currentProfile.value?.standardAnswers || [])
 
 const diffResults = computed(() => {
   return userAnswer.value.map((userAnswerItem) => {

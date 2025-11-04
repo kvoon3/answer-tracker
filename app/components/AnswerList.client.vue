@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
 import { Menu } from 'floating-vue'
-import { nextTick, ref, watch } from 'vue'
 
-const answers = defineModel<Answer[]>('questions', { default: () => [] })
+const emit = defineEmits<{
+  optionSelect: [questionId: number, option: string]
+}>()
+
+const { currentProfile } = useProfiles()
+const { activeTab } = useActiveTab()
+
+const answers = computed<Answer[]>(() => activeTab.value === 'answer'
+  ? currentProfile.value?.userAnswers || []
+  : currentProfile.value?.standardAnswers || [])
 const currentQuestionId = defineModel<number>('currentQuestionId', { default: 0 })
 
 // Refs for question elements to enable auto-scrolling
@@ -22,10 +30,7 @@ const options = ['A', 'B', 'C', 'D']
 
 // 处理选项选择
 function handleOptionSelect(questionId: number, option: string) {
-  const answer = answers.value.find(q => q.id === questionId)
-  if (answer) {
-    answer.value = option
-  }
+  emit('optionSelect', questionId, option)
 }
 
 // 自动滚动到当前聚焦的问题
