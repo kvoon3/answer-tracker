@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
 import AnswerList from '~/components/AnswerList.vue'
+import Modal from '~/components/Modal.vue'
 
 const questionCount = ref(130)
 const activeTab = ref<'answer' | 'input' | 'diff'>('answer')
@@ -8,6 +9,7 @@ const userAnswer = ref<Answer[]>([])
 const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
 const showShortcuts = ref(false)
+const showSettings = ref(false)
 
 const isInputing = ref(false)
 
@@ -158,12 +160,6 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault()
   }
 
-  // ESC 关闭帮助
-  if (key === 'escape' && showShortcuts.value) {
-    showShortcuts.value = false
-    event.preventDefault()
-  }
-
   // backspace 删除答案或跳转到前一个题目
   if (key === 'backspace') {
     const currentAnswer = userAnswer.value.find(q => q.id === currentQuestionId.value)
@@ -258,33 +254,15 @@ onUnmounted(() => {
               {{ accuracyRate }}%
             </span>
           </div>
+
+          <Icon name="ph:gear-six-duotone" size="24" @click="showSettings = true" />
         </div>
       </div>
     </header>
 
     <main p4 of-y-auto flex="~ col">
-      <div mb6 p6 rounded-lg bg-white shadow-sm>
-        <h2 text="xl neutral-800" font-semibold mb4>
-          设置题目数量
-        </h2>
-        <div flex="~ wrap" gap4 items="center">
-          <input
-            v-model.number="questionCount"
-            type="number"
-            min="1"
-            max="100" border="1 neutral-300 rounded"
-            p="x-3 y-2" text-center
-            bg-white w32 @focus="() => {
-              isInputing = true
-            }"
-            @change="initializeQuestions"
-          >
-          <span text="neutral-600">道题目</span>
-        </div>
-      </div>
-
-      <div rounded-lg bg-white shadow-sm relative of-auto>
-        <div border="b-1 neutral-200" bg-white top-0 sticky>
+      <div rounded-lg bg-white shadow-sm relative of-auto grid="~ cols-1fr_min-content">
+        <div border="b-1 neutral-200" bg-white>
           <button
             v-for="tab in tabs" :key="tab.id"
             flex1 font-medium p4 text-center border="b-2 transparent"
@@ -295,7 +273,7 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div p4>
+        <div p4 of-y-auto>
           <AnswerList v-if="activeTab === 'answer'" v-model:questions="userAnswer" v-model:current-question-id="currentQuestionId" />
           <AnswerList v-else-if="activeTab === 'input'" v-model:questions="answer" v-model:current-question-id="currentQuestionId" />
           <DiffList v-else-if="activeTab === 'diff'" v-model:user-answer="userAnswer" v-model:answer="answer" />
@@ -330,126 +308,129 @@ onUnmounted(() => {
     </footer>
 
     <!-- 快捷键帮助模态框 -->
-    <div
-      v-if="showShortcuts"
-      bg="black/50" flex items-center inset-0 justify-center fixed z-50
-      @click="showShortcuts = false"
+    <Modal
+      :show="showShortcuts"
+      title="快捷键帮助"
+      @close="showShortcuts = false"
     >
-      <div
-        mx-4 p-6 rounded-lg bg-white max-w-md w-full shadow-lg
-        @click.stop
-      >
-        <div flex="~" mb-4 items-center justify-between>
-          <h2 text="xl neutral-800" font-semibold>
-            快捷键帮助
-          </h2>
-          <button
-            text="lg neutral-500 hover:neutral-700"
-            @click="showShortcuts = false"
-          >
-            ×
-          </button>
-        </div>
-
-        <div space-y-4>
-          <div>
-            <h3 text="lg neutral-700" font-semibold mb-2>
-              导航
-            </h3>
-            <div grid="~ cols-2" text-sm gap2>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>h</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>←</kbd>
-                <span text="neutral-600">左移 -1</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>l</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>→</kbd>
-                <span text="neutral-600">右移 +1</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>j</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↓</kbd>
-                <span text="neutral-600">下移 +5</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>k</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↑</kbd>
-                <span text="neutral-600">上移 -5</span>
-              </div>
+      <div space-y-4>
+        <div>
+          <h3 text="lg neutral-700" font-semibold mb-2>
+            导航
+          </h3>
+          <div grid="~ cols-2" text-sm gap2>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>h</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>←</kbd>
+              <span text="neutral-600">左移 -1</span>
             </div>
-          </div>
-
-          <div>
-            <h3 text="lg neutral-700" font-semibold mb-2>
-              作答
-            </h3>
-            <div grid="~ cols-2" text-sm gap2>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>a</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>1</kbd>
-                <span text="neutral-600">选择 A</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>b</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>2</kbd>
-                <span text="neutral-600">选择 B</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>c</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>3</kbd>
-                <span text="neutral-600">选择 C</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>d</kbd>
-                <span text="neutral-600">或</span>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>4</kbd>
-                <span text="neutral-600">选择 D</span>
-              </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>l</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>→</kbd>
+              <span text="neutral-600">右移 +1</span>
             </div>
-          </div>
-
-          <div>
-            <h3 text="lg neutral-700" font-semibold mb-2>
-              其他
-            </h3>
-            <div text-sm space-y-2>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
-                <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>[</kbd>
-                <span text="neutral-600">切换到前一个标签页</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>]</kbd>
-                <span text="neutral-600">切换到下一个标签页</span>
-              </div>
-              <div flex="~" gap2 items-center>
-                <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>?</kbd>
-                <span text="neutral-600">显示/隐藏此帮助窗口</span>
-              </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>j</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↓</kbd>
+              <span text="neutral-600">下移 +5</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>k</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>↑</kbd>
+              <span text="neutral-600">上移 -5</span>
             </div>
           </div>
         </div>
 
-        <div mt-6 pt-4 border="t-1 neutral-200" text-center>
-          <button
-            text="teal-600 hover:teal-700"
-            @click="showShortcuts = false"
-          >
-            关闭
-          </button>
+        <div>
+          <h3 text="lg neutral-700" font-semibold mb-2>
+            作答
+          </h3>
+          <div grid="~ cols-2" text-sm gap2>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>a</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>1</kbd>
+              <span text="neutral-600">选择 A</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>b</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>2</kbd>
+              <span text="neutral-600">选择 B</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>c</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>3</kbd>
+              <span text="neutral-600">选择 C</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>d</kbd>
+              <span text="neutral-600">或</span>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>4</kbd>
+              <span text="neutral-600">选择 D</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 text="lg neutral-700" font-semibold mb-2>
+            其他
+          </h3>
+          <div text-sm space-y-2>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>backspace</kbd>
+              <span text="neutral-600">删除当前答案，或跳转到前一个题目</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>[</kbd>
+              <span text="neutral-600">切换到前一个标签页</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>]</kbd>
+              <span text="neutral-600">切换到下一个标签页</span>
+            </div>
+            <div flex="~" gap2 items-center>
+              <kbd border="1 neutral-300 rounded" text-xs px2 py1 bg-neutral-50>?</kbd>
+              <span text="neutral-600">显示/隐藏此帮助窗口</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Modal>
+
+    <!-- 设置模态框 -->
+    <Modal
+      :show="showSettings"
+      title="设置"
+      @close="showSettings = false"
+    >
+      <div space-y-4>
+        <div>
+          <h3 text="lg neutral-700" font-semibold mb-2>
+            题目数量设置
+          </h3>
+          <div flex="~ wrap" gap4 items="center">
+            <input
+              v-model.number="questionCount"
+              type="number"
+              min="1"
+              max="100" border="1 neutral-300 rounded"
+              p="x-3 y-2" text-center
+              bg-white w32 @focus="() => {
+                isInputing = true
+              }"
+              @change="initializeQuestions"
+            >
+            <span text="neutral-600">道题目</span>
+          </div>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>

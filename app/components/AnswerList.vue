@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { Answer } from '~/types'
 import { Menu } from 'floating-vue'
+import { nextTick, ref, watch } from 'vue'
 
 const questions = defineModel<Answer[]>('questions', { default: () => [] })
 const currentQuestionId = defineModel<number>('currentQuestionId', { default: 0 })
+
+// Refs for question elements to enable auto-scrolling
+const questionRefs = ref<Record<number, HTMLElement>>({})
 
 const groupedQuestions = computed(() => {
   const groups = []
@@ -23,10 +27,30 @@ function handleOptionSelect(questionId: number, option: string) {
     question.value = option
   }
 }
+
+// 自动滚动到当前聚焦的问题
+function scrollToQuestion(questionId: number) {
+  const element = questionRefs.value[questionId]
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }
+}
+
+// 监听当前问题ID变化，自动滚动到该问题
+watch(currentQuestionId, async (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    await nextTick()
+    scrollToQuestion(newId)
+  }
+})
 </script>
 
 <template>
-  <div h-full of-y-auto>
+  <div>
     <div v-for="(group, groupIndex) in groupedQuestions" :key="groupIndex" mb6>
       <div flex="~ wrap" gap6 justify="center">
         <Menu
@@ -39,6 +63,7 @@ function handleOptionSelect(questionId: number, option: string) {
           <div flex="~ col" gap2 w10 items-center>
             <span text="sm neutral-600" font-bold>{{ question.id }}</span>
             <button
+              :ref="(el) => { if (el) questionRefs[question.id] = el as HTMLElement } "
               text-lg font-semibold border-2 rounded-lg size-10
               transition="all duration-200"
               :class="{
