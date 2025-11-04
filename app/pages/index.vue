@@ -301,7 +301,7 @@ onUnmounted(() => {
           Next
         </button>
         <button
-          text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white max-lg:hidden right-12 absolute hover="bg-neutral-50"
+          text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white right-12 absolute max-lg:hidden hover="bg-neutral-50"
           @click="showShortcuts = true"
         >
           快捷键帮助
