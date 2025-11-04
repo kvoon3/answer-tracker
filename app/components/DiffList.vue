@@ -30,16 +30,16 @@ const groupedDiffResults = computed(() => {
 <template>
   <div>
     <div v-for="(group, groupIndex) in groupedDiffResults" :key="groupIndex" mb6>
-      <div flex="~ wrap" gap4 justify="center">
+      <div flex="~ wrap" gap6 justify="center">
         <div
           v-for="(result) in group"
           :key="result.id"
           flex="~ col"
-          gap2 w16 items-center
+          gap2 w10 items-center
         >
           <span text="sm neutral-600" font-bold>{{ result.id }}</span>
           <div
-            text-lg font-semibold border-2 rounded-lg flex h12 w12 items-center justify-center
+            text-lg font-semibold border-2 rounded-lg flex size-10 items-center justify-center
             transition="all duration-200"
             :class="{
               'border-green-500 bg-green-50 text-green-600': result.isCorrect && result.userAnswer,

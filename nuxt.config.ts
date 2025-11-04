@@ -4,6 +4,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@unocss/nuxt',
     '@vueuse/nuxt',
+    '@nuxt/icon',
   ],
 
   css: ['floating-vue/style.css'],

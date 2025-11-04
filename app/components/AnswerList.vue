@@ -26,24 +26,24 @@ function handleOptionSelect(questionId: number, option: string) {
 </script>
 
 <template>
-  <div>
+  <div h-full of-y-auto>
     <div v-for="(group, groupIndex) in groupedQuestions" :key="groupIndex" mb6>
       <div flex="~ wrap" gap6 justify="center">
         <Menu
           v-for="(question) in group"
           :key="question.id"
           :triggers="['hover']"
-          :delay="{ show: 100, hide: 300 }"
+          :delay="{ show: 100, hide: 100 }"
           placement="bottom"
         >
-          <div flex="~ col" gap2 w16 items-center>
+          <div flex="~ col" gap2 w10 items-center>
             <span text="sm neutral-600" font-bold>{{ question.id }}</span>
             <button
-              text-lg font-semibold border-2 rounded-lg h12 w12
+              text-lg font-semibold border-2 rounded-lg size-10
               transition="all duration-200"
               :class="{
                 'border-neutral-300 bg-white text-gray-700 hover:border-neutral-400': !question.value && currentQuestionId !== question.id,
-                'border-blue-500 bg-blue-50 text-blue-600': question.value && currentQuestionId !== question.id,
+                'border-teal-500 bg-teal-50 text-teal-600': question.value && currentQuestionId !== question.id,
                 'border-neutral-500 bg-neutral-300/20': currentQuestionId === question.id,
               }"
               @click="currentQuestionId = question.id"
@@ -62,7 +62,7 @@ function handleOptionSelect(questionId: number, option: string) {
               <button
                 v-for="option in options" :key="option"
                 text="sm white"
-                px1 rounded bg-blue-500 hover:bg-blue-600 transition="all duration-200"
+                px1 rounded bg-teal-500 hover:bg-teal-600 transition="all duration-200"
                 @click="handleOptionSelect(question.id, option)"
               >
                 {{ option }}

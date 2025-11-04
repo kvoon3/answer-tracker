@@ -176,34 +176,60 @@ onUnmounted(() => {
   <div grid="~ rows-[min-content_1fr_min-content]" text-neutral-500 bg-neutral-50 h-screen relative>
     <header p4 bg-white shadow-sm>
       <div flex="~" items-center justify-between>
-        <h1 text="2xl neutral-800" font="bold">
-          Answer Tracker
-        </h1>
+        <div flex="~" gap3 items-center>
+          <h1 text="2xl neutral-800" font="bold" max-sm:hidden>
+            Answer Tracker
+          </h1>
+        </div>
 
         <!-- 常显进度统计 -->
-        <div flex="~ wrap" gap6 items-center text="sm">
-          <div>
-            <span text="neutral-600">已做：</span>
+        <div flex="~ wrap" gap4 items-center md:gap6 text="sm">
+          <!-- 已做 -->
+          <div flex="~" gap2 items-center>
+            <Icon name="ph:check-circle" size="18" text="green-600" />
+            <span max-sm:hidden text="neutral-600">已做：</span>
             <span text="green-600" font-semibold>{{ answeredCount }}</span>
           </div>
-          <div>
-            <span text="neutral-600">剩余：</span>
+
+          <!-- 剩余 -->
+          <div flex="~" gap2 items-center>
+            <Icon name="ph:equalizer-duotone" size="18" text="orange-600" />
+            <span max-sm:hidden text="neutral-600">剩余：</span>
             <span text="orange-600" font-semibold>{{ remainingCount }}</span>
           </div>
-          <div>
-            <span text="neutral-600">进度：</span>
-            <span text="blue-600" font-semibold>{{ Math.round((answeredCount / questionCount) * 100) || 0 }}%</span>
+
+          <!-- 进度 -->
+          <div flex="~" gap2 items-center>
+            <Icon name="ph:chart-bar" size="18" text="teal-600" />
+            <span max-sm:hidden text="neutral-600">进度：</span>
+            <span text="teal-600" font-semibold>{{ Math.round((answeredCount / questionCount) * 100) || 0 }}%</span>
           </div>
-          <div v-if="answeredCount > 0">
-            <span text="neutral-600">正确：</span>
+
+          <!-- 正确 -->
+          <div v-if="answeredCount > 0" flex="~" gap2 items-center>
+            <Icon name="ph:check" size="18" text="green-600" />
+            <span max-sm:hidden text="neutral-600">正确：</span>
             <span text="green-600" font-semibold>{{ correctCount }}</span>
           </div>
-          <div v-if="answeredCount > 0">
-            <span text="neutral-600">错误：</span>
+
+          <!-- 错误 -->
+          <div v-if="answeredCount > 0" flex="~" gap2 items-center>
+            <Icon name="ph:x" size="18" text="red-600" />
+            <span max-sm:hidden text="neutral-600">错误：</span>
             <span text="red-600" font-semibold>{{ incorrectCount }}</span>
           </div>
-          <div v-if="answeredCount > 0">
-            <span text="neutral-600">准确率：</span>
+
+          <!-- 准确率 -->
+          <div v-if="answeredCount > 0" flex="~" gap2 items-center>
+            <Icon
+              name="ph:target" size="18"
+              :class="{
+                'text-green-600': accuracyRate >= 80,
+                'text-yellow-600': accuracyRate >= 60 && accuracyRate < 80,
+                'text-red-600': accuracyRate < 60,
+              }"
+            />
+            <span max-sm:hidden text="neutral-600">准确率：</span>
             <span
               :class="{
                 'text-green-600': accuracyRate >= 80,
@@ -242,7 +268,7 @@ onUnmounted(() => {
           <button
             v-for="tab in tabs" :key="tab.id"
             flex1 font-medium p4 text-center border="b-2 transparent"
-            :class="{ 'border-blue-500 text-blue-600': activeTab === tab.id, 'text-neutral-500': activeTab !== tab.id }"
+            :class="{ 'border-teal-500 text-teal-600': activeTab === tab.id, 'text-neutral-500': activeTab !== tab.id }"
             @click="activeTab = tab.id"
           >
             {{ tab.name }}
@@ -266,7 +292,7 @@ onUnmounted(() => {
         </button>
         <button
           v-for="option in options" :key="option"
-          text="white lg" font-semibold rounded-lg bg-blue-500 size-8 transition="all duration-200" hover="bg-blue-600 scale-105" active="scale-95"
+          text="white lg" font-semibold rounded-lg bg-teal-500 size-8 transition="all duration-200" hover="bg-teal-600 scale-105" active="scale-95"
           @click="handleOptionSelect(option)"
         >
           {{ option }}
@@ -275,7 +301,7 @@ onUnmounted(() => {
           Next
         </button>
         <button
-          text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white right-12 absolute hover="bg-neutral-50"
+          text="xs neutral-500" border="1 neutral-300 rounded" p="x-3 y-1" bg-white max-lg:hidden right-12 absolute hover="bg-neutral-50"
           @click="showShortcuts = true"
         >
           快捷键帮助
@@ -393,7 +419,7 @@ onUnmounted(() => {
 
         <div mt-6 pt-4 border="t-1 neutral-200" text-center>
           <button
-            text="blue-600 hover:blue-700"
+            text="teal-600 hover:teal-700"
             @click="showShortcuts = false"
           >
             关闭
