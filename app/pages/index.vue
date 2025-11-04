@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Answer } from '~/types'
 import AnswerList from '~/components/AnswerList.vue'
 import ImportModal from '~/components/ImportModal.vue'
 import Modal from '~/components/Modal.vue'
@@ -12,20 +11,42 @@ const {
   switchProfile,
   deleteProfile,
   editProfileName,
-  updateUserAnswers,
-  updateStandardAnswers,
-  updateQuestionCount,
   initializeProfiles,
 } = useProfiles()
 
-const questionCount = ref(130)
 const activeTab = ref<'answer' | 'input' | 'diff'>('answer')
-const userAnswer = ref<Answer[]>([])
-const answer = ref<Answer[]>([])
 const currentQuestionId = ref<number>(0)
 const showShortcuts = ref(false)
 const showSettings = ref(false)
 const showImport = ref(false)
+
+// Direct references to current profile data
+const questionCount = computed({
+  get: () => currentProfile.value?.questionCount || 130,
+  set: (value) => {
+    if (currentProfile.value) {
+      currentProfile.value.questionCount = value
+    }
+  },
+})
+
+const userAnswer = computed({
+  get: () => currentProfile.value?.userAnswers || [],
+  set: (value) => {
+    if (currentProfile.value) {
+      currentProfile.value.userAnswers = [...value]
+    }
+  },
+})
+
+const answer = computed({
+  get: () => currentProfile.value?.standardAnswers || [],
+  set: (value) => {
+    if (currentProfile.value) {
+      currentProfile.value.standardAnswers = [...value]
+    }
+  },
+})
 
 const isInputing = ref(false)
 const shortcutsEnabled = ref(true)
@@ -73,38 +94,6 @@ const accuracyRate = computed(() => {
   return answered > 0 ? Math.round((correctCount.value / answered) * 100) : 0
 })
 
-// Initialize questions from current profile or create default
-function initializeQuestions() {
-  if (currentProfile.value) {
-    // Update question count from profile
-    questionCount.value = currentProfile.value.questionCount
-
-    // Load answers from profile
-    userAnswer.value = [...currentProfile.value.userAnswers]
-    answer.value = [...currentProfile.value.standardAnswers]
-  }
-  else {
-    // Fallback to default initialization
-    userAnswer.value = Array.from({ length: questionCount.value }, (_, i) => ({
-      id: i + 1,
-      value: undefined,
-    }))
-    answer.value = Array.from({ length: questionCount.value }, (_, i) => ({
-      id: i + 1,
-      value: undefined,
-    }))
-  }
-}
-
-// Save answers to current profile
-function saveAnswersToProfile() {
-  if (currentProfile.value) {
-    updateUserAnswers(userAnswer.value)
-    updateStandardAnswers(answer.value)
-    updateQuestionCount(questionCount.value)
-  }
-}
-
 function handleOptionSelect(option: string) {
   if (currentQuestionId.value !== null) {
     if (activeTab.value === 'answer') {
@@ -120,9 +109,6 @@ function handleOptionSelect(option: string) {
       }
     }
   }
-
-  // Save answers to profile
-  saveAnswersToProfile()
 
   // 自动开始下一题
   const currentArray = activeTab.value === 'answer' ? userAnswer.value : answer.value
@@ -242,12 +228,6 @@ function handleKeydown(event: KeyboardEvent) {
 function handleImport(answers: (string | undefined)[], type: 'user' | 'standard') {
   const targetArray = type === 'user' ? userAnswer.value : answer.value
 
-  // Update question count if needed
-  if (answers.length > questionCount.value) {
-    questionCount.value = answers.length
-    initializeQuestions()
-  }
-
   // Update answers
   answers.forEach((answerValue, index) => {
     const questionId = index + 1
@@ -256,14 +236,10 @@ function handleImport(answers: (string | undefined)[], type: 'user' | 'standard'
       answerItem.value = answerValue || undefined
     }
   })
-
-  // Save answers to profile
-  saveAnswersToProfile()
 }
 
 onMounted(() => {
   initializeProfiles()
-  initializeQuestions()
   document.addEventListener('keydown', handleKeydown)
 })
 
@@ -281,14 +257,12 @@ function handleCreateProfile() {
 
 function handleSwitchProfile(profileId: string) {
   switchProfile(profileId)
-  initializeQuestions()
 }
 
 function handleDeleteProfile(profileId: string) {
   // eslint-disable-next-line no-alert
   if (confirm('确定要删除这个档案吗？此操作无法撤销。')) {
     deleteProfile(profileId)
-    initializeQuestions()
   }
 }
 
@@ -590,7 +564,6 @@ function cancelEditProfile() {
                 bg-white w32 @focus="() => {
                   isInputing = true
                 }"
-                @change="initializeQuestions"
               >
               <span text="neutral-600">道题目</span>
             </div>
@@ -660,7 +633,7 @@ function cancelEditProfile() {
             </h3>
             <div max-h-60 of-y-auto space-y-2>
               <div
-                v-for="profile in profiles"
+                v-for="profile in Object.values(profiles)"
                 :key="profile.id"
                 bg="neutral-50" border="1 neutral-200 rounded" p3
                 :class="{ 'border-teal-500 bg-teal-50': currentProfile?.id === profile.id }"

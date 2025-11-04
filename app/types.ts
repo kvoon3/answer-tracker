@@ -11,8 +11,3 @@ export interface Profile {
   userAnswers: Answer[]
   standardAnswers: Answer[]
 }
-
-export interface ProfileStorage {
-  id: string | null
-  profiles: Profile[]
-}

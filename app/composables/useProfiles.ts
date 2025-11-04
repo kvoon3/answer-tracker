@@ -1,15 +1,11 @@
-import type { Answer, Profile, ProfileStorage } from '~/types'
+import type { Profile } from '~/types'
 
 export function useProfiles() {
-  const data = useLocalStorage<ProfileStorage>('answer-sheet-profiles', {
-    id: null,
-    profiles: [],
-  })
+  const profiles = useLocalStorage<Record<string, Profile>>('answer-sheet-profiles', {})
+  const currentProfileId = useLocalStorage<string | null>('answer-sheet-current-profile-id', null)
 
   // Generate a unique ID for new profiles
-  const generateId = (): string => {
-    return `profile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
+  const generateId = (): string => `profile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
   // Create a new profile
   const createProfile = (name?: string, questionCount: number = 100): Profile => {
@@ -23,11 +19,11 @@ export function useProfiles() {
       standardAnswers: Array.from({ length: questionCount }, (_, i) => ({ id: i + 1, value: undefined })),
     }
 
-    data.value.profiles.push(newProfile)
+    profiles.value[newProfile.id] = newProfile
 
     // If this is the first profile, set it as current
-    if (data.value.profiles.length === 1) {
-      data.value.id = newProfile.id
+    if (Object.keys(profiles.value).length === 1) {
+      currentProfileId.value = newProfile.id
     }
 
     return newProfile
@@ -35,16 +31,15 @@ export function useProfiles() {
 
   // Get current profile
   const currentProfile = computed<Profile | null>(() => {
-    if (!data.value.id)
+    if (!currentProfileId.value)
       return null
-    return data.value.profiles.find(p => p.id === data.value.id) || null
+    return profiles.value[currentProfileId.value] || null
   })
 
   // Switch to a different profile
   const switchProfile = (profileId: string): boolean => {
-    const profile = data.value.profiles.find(p => p.id === profileId)
-    if (profile) {
-      data.value.id = profileId
+    if (profiles.value[profileId]) {
+      currentProfileId.value = profileId
       return true
     }
     return false
@@ -52,25 +47,25 @@ export function useProfiles() {
 
   // Delete a profile
   const deleteProfile = (profileId: string): boolean => {
-    const profileIndex = data.value.profiles.findIndex(p => p.id === profileId)
-    if (profileIndex === -1)
+    if (!profiles.value[profileId])
       return false
 
-    const isCurrentProfile = data.value.id === profileId
+    const isCurrentProfile = currentProfileId.value === profileId
 
     // Remove the profile
-    data.value.profiles.splice(profileIndex, 1)
+    delete profiles.value[profileId]
 
     // Handle current profile switching if we deleted the current one
     if (isCurrentProfile) {
-      if (data.value.profiles.length > 0) {
-        // Switch to the most recent profile (last in array)
-        data.value.id = data.value.profiles[data.value.profiles.length - 1]!.id
+      const profileIds = Object.keys(profiles.value)
+      if (profileIds.length > 0) {
+        // Switch to the most recent profile (last in object keys)
+        currentProfileId.value = profileIds[profileIds.length - 1]!
       }
       else {
         // No profiles left, create a default one
         const defaultProfile = createProfile()
-        data.value.id = defaultProfile.id
+        currentProfileId.value = defaultProfile.id
       }
     }
 
@@ -79,35 +74,9 @@ export function useProfiles() {
 
   // Edit profile name
   const editProfileName = (profileId: string, newName: string): boolean => {
-    const profile = data.value.profiles.find(p => p.id === profileId)
+    const profile = profiles.value[profileId]
     if (profile && newName.trim()) {
       profile.name = newName.trim()
-      return true
-    }
-    return false
-  }
-
-  // Update user answers in current profile
-  const updateUserAnswers = (answers: Answer[]): boolean => {
-    if (!currentProfile.value)
-      return false
-
-    const profile = data.value.profiles.find(p => p.id === currentProfile.value!.id)
-    if (profile) {
-      profile.userAnswers = [...answers]
-      return true
-    }
-    return false
-  }
-
-  // Update standard answers in current profile
-  const updateStandardAnswers = (answers: Answer[]): boolean => {
-    if (!currentProfile.value)
-      return false
-
-    const profile = data.value.profiles.find(p => p.id === currentProfile.value!.id)
-    if (profile) {
-      profile.standardAnswers = [...answers]
       return true
     }
     return false
@@ -118,7 +87,7 @@ export function useProfiles() {
     if (!currentProfile.value)
       return false
 
-    const profile = data.value.profiles.find(p => p.id === currentProfile.value!.id)
+    const profile = profiles.value[currentProfile.value.id]
     if (profile) {
       // Resize arrays if count changes
       if (count > profile.questionCount) {
@@ -147,22 +116,16 @@ export function useProfiles() {
   }
 
   // Initialize with default profile if none exist
-  const initializeProfiles = () => {
-    if (data.value.profiles.length === 0) {
-      createProfile()
-    }
-  }
+  const initializeProfiles = () => Object.keys(profiles.value).length === 0 && createProfile()
 
   return {
-    storage: readonly(data),
-    profiles: computed(() => data.value.profiles),
+    profiles,
+    currentProfileId,
     currentProfile,
     createProfile,
     switchProfile,
     deleteProfile,
     editProfileName,
-    updateUserAnswers,
-    updateStandardAnswers,
     updateQuestionCount,
     initializeProfiles,
   }
